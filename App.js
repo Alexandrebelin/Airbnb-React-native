@@ -4,6 +4,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+
+// Containers
 import HomeScreen from "./containers/HomeScreen";
 import ProfileScreen from "./containers/ProfileScreen";
 import SignInScreen from "./containers/SignInScreen";
@@ -47,7 +49,10 @@ export default function App() {
       {isLoading ? null : userToken === null ? ( // We haven't finished checking for the token yet
         // No token found, user isn't signed in
         <Stack.Navigator>
-          <Stack.Screen name="SignIn" options={{ animationEnabled: false }}>
+          <Stack.Screen
+            name="SignIn"
+            options={{ header: () => null, animationEnabled: false }}
+          >
             {() => <SignInScreen setToken={setToken} />}
           </Stack.Screen>
           <Stack.Screen name="SignUp">
