@@ -78,16 +78,17 @@ const styles = StyleSheet.create({
   safeAreaView: {
     backgroundColor: colors.bgColor,
   },
-  // scrollView: {
-  //   flex: 1,
-  //   backgroundColor: colors.bgColor,
-  //   alignItems: "center",
-  //   justifyContent: "space-around",
-  //   height: scrollViewHeight,
-  // },
+  scrollView: {
+    // flex: 1,
+    backgroundColor: colors.bgColor,
+    alignItems: "center",
+    justifyContent: "space-around",
+    height: scrollViewHeight,
+  },
   view: {
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
   },
+  input: {},
 });
