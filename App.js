@@ -3,14 +3,29 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Ionicons } from "@expo/vector-icons";
 
 // Containers
 import HomeScreen from "./containers/HomeScreen";
+import RoomScreen from "./containers/RoomScreen";
 import ProfileScreen from "./containers/ProfileScreen";
 import SignInScreen from "./containers/SignInScreen";
 import SignUpScreen from "./containers/SignUpScreen";
 import SettingsScreen from "./containers/SettingsScreen";
+
+// Components
+
+import Logo from "./components/Logo";
+import BackButton from "./components/BackButton";
+
+// Icons
+import {
+  Ionicons,
+  MaterialCommunityIcons,
+  AntDesign,
+} from "@expo/vector-icons";
+
+// Colors
+import colors from "./assets/colors";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -18,27 +33,35 @@ const Stack = createStackNavigator();
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [userToken, setUserToken] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   const setToken = async (token) => {
     if (token) {
       AsyncStorage.setItem("userToken", token);
+      setUserToken(token);
     } else {
       AsyncStorage.removeItem("userToken");
+      setUserToken(null);
     }
+  };
 
-    setUserToken(token);
+  const setId = async (id) => {
+    if (id) {
+      AsyncStorage.setItem("userId", id);
+      setUserId(id);
+    } else {
+      AsyncStorage.removeItem("userId");
+      setUserId(null);
+    }
   };
 
   useEffect(() => {
-    // Fetch the token from storage then navigate to our appropriate place
     const bootstrapAsync = async () => {
-      // We should also handle error for production apps
       const userToken = await AsyncStorage.getItem("userToken");
-
-      // This will switch to the App screen or Auth screen and this loading
-      // screen will be unmounted and thrown away.
-      setIsLoading(false);
+      const userId = await AsyncStorage.getItem("userId");
       setUserToken(userToken);
+      setUserId(userId);
+      setIsLoading(false);
     };
 
     bootstrapAsync();
@@ -46,31 +69,27 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      {isLoading ? null : userToken === null ? ( // We haven't finished checking for the token yet
-        // No token found, user isn't signed in
-        <Stack.Navigator>
-          <Stack.Screen
-            name="SignIn"
-            options={{ header: () => null, animationEnabled: false }}
-          >
-            {() => <SignInScreen setToken={setToken} />}
+      {isLoading ? null : userToken === null ? (
+        <Stack.Navigator
+          initialRouteName="SignIn"
+          screenOptions={{ headerShown: false }}
+        >
+          <Stack.Screen name="SignIn">
+            {() => <SignInScreen setToken={setToken} setId={setId} />}
           </Stack.Screen>
           <Stack.Screen name="SignUp">
-            {() => <SignUpScreen setToken={setToken} />}
+            {() => <SignUpScreen setToken={setToken} setId={setId} />}
           </Stack.Screen>
         </Stack.Navigator>
       ) : (
         // User is signed in
         <Stack.Navigator>
-          <Stack.Screen
-            name="Tab"
-            options={{ headerShown: false, animationEnabled: false }}
-          >
+          <Stack.Screen name="Tab" options={{ headerShown: false }}>
             {() => (
               <Tab.Navigator
                 tabBarOptions={{
-                  activeTintColor: "tomato",
-                  inactiveTintColor: "gray",
+                  activeTintColor: colors.pink,
+                  inactiveTintColor: colors.grey,
                 }}
               >
                 <Tab.Screen
@@ -83,29 +102,32 @@ export default function App() {
                   }}
                 >
                   {() => (
-                    <Stack.Navigator>
+                    <Stack.Navigator
+                      screenOptions={{
+                        headerShown: true,
+                      }}
+                    >
                       <Stack.Screen
                         name="Home"
                         options={{
-                          title: "My App",
-                          headerStyle: { backgroundColor: "red" },
-                          headerTitleStyle: { color: "white" },
+                          headerTitle: () => <Logo size={"small"} />,
                         }}
                       >
-                        {() => <HomeScreen />}
+                        {(props) => <HomeScreen {...props} />}
                       </Stack.Screen>
-
                       <Stack.Screen
-                        name="Profile"
+                        name="Room1"
                         options={{
-                          title: "User Profile",
+                          headerTitle: () => <Logo size={"small"} />,
+                          headerLeft: () => <BackButton />,
                         }}
                       >
-                        {() => <ProfileScreen />}
+                        {(props) => <RoomScreen {...props} />}
                       </Stack.Screen>
                     </Stack.Navigator>
                   )}
                 </Tab.Screen>
+
                 <Tab.Screen
                   name="Settings"
                   options={{

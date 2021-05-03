@@ -1,18 +1,111 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/core";
-import { Button, Text, View } from "react-native";
+import {
+  ImageBackground,
+  FlatList,
+  Platform,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-export default function HomeScreen() {
-  const navigation = useNavigation();
+import axios from "axios";
+
+// Colors
+import colors from "../assets/colors";
+
+// Components
+import PriceView from "../components/PriceView";
+import Informations from "../components/Informations";
+import { ActivityIndicator } from "react-native";
+
+const HomeScreen = ({ navigation }) => {
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          "https://express-airbnb-api.herokuapp.com/rooms"
+        );
+        setData(response.data);
+        setIsLoading(false);
+      } catch (error) {
+        alert("An error occurred");
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
-    <View>
-      <Text>Welcome home!</Text>
-      <Button
-        title="Go to Profile"
-        onPress={() => {
-          navigation.navigate("Profile", { userId: 123 });
-        }}
+    <SafeAreaView>
+      <StatusBar
+        barStyle={Platform.OS === "ios" ? "dark-content" : "light-content"}
       />
-    </View>
+
+      {isLoading ? (
+        <ActivityIndicator size="large" color={colors.pink} />
+      ) : (
+        <FlatList
+          data={data}
+          renderItem={({ item, index }) => {
+            return (
+              <TouchableOpacity
+                style={
+                  index === data.length - 1
+                    ? styles.container
+                    : [styles.container, styles.border]
+                }
+                activeOpacity={0.7}
+                onPress={() => {
+                  navigation.navigate("Room1", { id: item._id });
+                }}
+              >
+                <ImageBackground
+                  source={{ uri: item.photos[0].url }}
+                  style={styles.bgImage}
+                >
+                  <PriceView price={item.price} />
+                </ImageBackground>
+                <Informations
+                  title={item.title}
+                  ratingValue={item.ratingValue}
+                  reviews={item.reviews}
+                  photo={item.user.account.photo.url}
+                />
+              </TouchableOpacity>
+            );
+          }}
+          keyExtractor={(item) => item._id}
+          style={styles.flatList}
+        />
+      )}
+    </SafeAreaView>
   );
-}
+};
+
+export default HomeScreen;
+
+const styles = StyleSheet.create({
+  activityIndicator: { paddingTop: 20 },
+  flatList: { backgroundColor: colors.bgColor },
+  container: {
+    height: 300,
+    marginVertical: 10,
+    marginHorizontal: 20,
+  },
+  border: {
+    borderBottomColor: colors.lightGrey,
+    borderBottomWidth: 1,
+  },
+  bgImage: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  icon: {
+    marginRight: 5,
+  },
+});
